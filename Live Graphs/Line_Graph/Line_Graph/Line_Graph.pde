@@ -3,12 +3,12 @@ import javax.swing.JOptionPane;
 import org.gicentre.utils.stat.*;
 
 /**
-Graphs arduino temperature and humidity data as double line graph
-
-@name Ahmed Abdalla
-@mentor Jill Burnham
-@date 6-9-2017
-*/
+ Graphs arduino temperature and humidity data as double line graph
+ 
+ @name Ahmed Abdalla
+ @mentor Jill Burnham
+ @date 6-9-2017
+ */
 
 //COM3 with incoming arduino data
 Serial myPort;
@@ -36,10 +36,11 @@ int currTime;
 //data received from port
 String inString;
 int index;
+//int i = 0;
 
 /**
-  Sets up initial graphs with correct axes data, scale, etc...
-*/
+ Sets up initial graphs with correct axes data, scale, etc...
+ */
 void setup() {
   //screen size
   size(1000, 400);
@@ -94,7 +95,7 @@ void setup() {
   //formatting for humidity line chart
   humidityLineChart.setMinY(0);
   humidityLineChart.setMaxY(100);
-  humidityLineChart.setYFormat("#.# %");
+  humidityLineChart.setYFormat("");
   humidityLineChart.setYAxisAt(scope);
   humidityLineChart.setMinX(0);
   humidityLineChart.setMaxX(scope);  
@@ -112,11 +113,15 @@ void draw() {
   fill(120);
   textSize(20);
   text("Temperature and Humidity Data", 70, 30);
+    
+  //println(xData.get(i));
+  //println(tempData.get(i));
+  //println(humidityData.get(i++));
 }
 
 /**
-  Updates the graph using serialEvent() data
-*/
+ Updates the graph using serialEvent() data
+ */
 void update() {
   //adds new data points to each arraylist
   tempData.add(Float.parseFloat(inString.substring(0, index)));  
@@ -124,10 +129,12 @@ void update() {
   xData.add((float)currTime);
 
   //checks if current time is greater than max time in order to reset graph
-  if (xData.size() == 0 || currTime == scope) {
+  if (xData.size() == 0 || currTime > scope) {
     xData = new ArrayList<Float>();
     tempData = new ArrayList<Float>();
     humidityData = new ArrayList<Float>();
+    
+    currTime = 0;
   }
 
   //sets and draws temperature data
@@ -138,20 +145,22 @@ void update() {
   //sets and draws humidity data
   humidityLineChart.setData(toArray(xData), toArray(humidityData));
   humidityLineChart.updateLayout();
-  humidityLineChart.draw(15, 15, width - 30, height - 30);
+  humidityLineChart.draw(8, 15, width - 30, height - 30);
 }
 
 /**
-  Stores data from arduino
-*/
+ Stores data from arduino
+ */
 void serialEvent(Serial myPort) {  
   //safely handles initialization exception
   try {
     inString = myPort.readStringUntil('%'); 
     index = inString.indexOf('*');     
-
+    System.out.println(inString);
+    
     delay(1000 * time);
     currTime += time;
+    println(currTime);
   }
   catch(Exception e) {
     e.printStackTrace();
@@ -159,8 +168,8 @@ void serialEvent(Serial myPort) {
 }
 
 /**
-  converts ArrayList<Float> into float[] not Object[] because float can't be cast to object
-*/
+ converts ArrayList<Float> into float[] not Object[] because float can't be cast to object
+ */
 float[] toArray(ArrayList<Float> floatList) {
   int i = 0;
   float[] floatArray = new float[floatList.size()];
