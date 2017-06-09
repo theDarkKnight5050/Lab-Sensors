@@ -1,6 +1,17 @@
+/**
+ * Gathers and reports temperature and humidity data
+ * 
+ * @name Ahmed Abdalla
+ * @mentor Jill Burnham
+ * @date 6-9-2017
+ */
+
 //number of analog values taken before each measurement is calculated
 int NUMAVERAGE = 5;
 
+/**
+ * YSI 44008 Thermistor
+ */
 class TemperatureReader{
   /**
    * For some reason SERIESRESISTOR is changing with input voltage.
@@ -36,16 +47,21 @@ class TemperatureReader{
       temperature = ACOEFFICIENT + BCOEFFICIENT * log(reading) + CCOEFFICIENT * pow(log(reading), 3);
       temperature = 1.0/temperature - 273.15;
     
-      Serial.println(temperature);
+      Serial.print(temperature);
+      Serial.println("*C");
      }
 };
   
 
-class HumidityReader{
+/**
+ * HIH-5030/5031 humidity sensor
+ */
+ class HumidityReader{
   //proportionality constant from humidity to voltage
   #define RHtoVCONSTANT 48
   //humdity pin
   #define HUMIDITYPIN A1
+  //max voltage of power source
   #define MAXOUTPUTVOLTAGE 3.3
   public:
     void getHumidity(){
@@ -61,6 +77,7 @@ class HumidityReader{
       reading = reading * RHtoVCONSTANT - 24; 
         
       Serial.print(reading);
+      Serial.println('%');
     }
 };
 
