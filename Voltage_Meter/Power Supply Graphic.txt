@@ -1,0 +1,112 @@
+import processing.core.PApplet;
+import processing.serial.*;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JLabel;
+import javax.swing.JFrame;
+import java.awt.event.*;
+
+public class Controller extends JFrame	{
+	public static void main (String[] args)	{
+		JFrame frame = new JFrame();
+		frame.setSize(400, 225);
+		frame.setLocation(100, 50);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setContentPane(new InputWindow());
+		frame.setVisible(true);
+	}
+}
+
+public class ArduinoComm extends PApplet{
+	public void setup()	{
+		size(200, 200);
+		String portName = Serial.list()[1];
+		myPort = new Serial(this, portName, 9600);
+	}
+	
+	public void updateVoltage(int newVoltage)	{
+		myPort.write("Voltage: " + newVoltage);
+	}
+
+	public void updateCurrent(int newCurrent)	{
+		myPort.write("Current: " + newCurrent);
+	}
+
+	public void updateResistance(int newResistance)	{
+		myPort.write("Resistance: " + newResistance);
+	}
+}
+
+public class InputWindow extends JPanel{
+	ArduinoComm comm;
+	JLabel voLabel, currLabel, resLabel;
+	JTextField voText, currText, resText;
+	JButton voButton, currButton, resButton;   
+
+	public InputWindow(){
+		setLayout(new GridLayout(3, 3)); 
+		
+		voLabel = new JPanel("Voltage: ");
+		add(voLabel);
+		voText = new JTextField();
+		add(voText);
+		voButton = new JButton("Update");
+		voButton.addActionListener(new VoltageListener());		
+		add(voButton);
+
+		currLabel = new JPanel("Current: ");
+		add(currLabel);
+		currText = new JTextField();
+		add(currText);
+		currButton = new JButton("Update");
+		currButton.addActionListener(new CurrentListener());
+		add(currButton);
+
+		resLabel = new JPanel("Resistance: ");
+		add(resLabel);
+		resText = new JTextField();
+		add(resText);
+		resButton = new JButton("Update");
+		resButton.addActionListner(new ResistanceListener());
+		add(resButton);
+	}
+
+	class VoltageListener implements ActionListener{
+		public void actionPerformed(ActionEvent ae)	{
+			try	{
+				String voltage = voText.getText();
+				comm.updateVoltage(Integer.parseInt(voltage));
+				voText.setText("");
+			}
+			catch(Exception e)	{
+				JOptionPane.showMessageDialog(frame, "Invalid Voltage", "Number Format Error", JOptionPane.WARNING_MESSAGE);
+			}
+		}
+	}
+
+	class CurrentListener implements ActionListener{
+		public void actionPerformed(ActionEvent ae)	{
+			try	{
+				String current = currText.getText();
+				comm.updateCurrent(Integer.parseInt(current));
+				currText.setText("");
+			}
+			catch(Exception e)	{
+				JOptionPane.showMessageDialog(frame, "Invalid Current", "Number Format Error", JOptionPane.WARNING_MESSAGE);
+			}
+		}
+	}
+
+	class ResistanceListener implements ActionListener{
+		public void actionPerformed(ActionEvent ae)	{
+			try	{
+				String resistance = resText.getText();
+				comm.updateResistance(Integer.parseInt(resistance));
+				resText.setText("");
+			}
+			catch(Exception e)	{
+				JOptionPane.showMessageDialog(frame, "Invalid Resistance", "Number Format Error", JOptionPane.WARNING_MESSAGE);
+			}
+		}
+	}
+}
