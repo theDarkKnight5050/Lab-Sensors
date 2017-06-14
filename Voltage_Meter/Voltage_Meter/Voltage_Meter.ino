@@ -16,11 +16,17 @@ int CI_V = 6;
 int CI_R = 9;
 int ON = 10;
 
-String inString;
+double inDouble;
+int check;
+int digit;
+boolean decimal;
 
-void setup() {
+double data;
+
+void setup()  {
   Serial.begin(9600);
-  Serial.println("Input voltage from 0-17.5V");
+
+  //establishContact();
 
   pinMode(CV_V, OUTPUT);
   pinMode(CI_V, OUTPUT);
@@ -28,70 +34,88 @@ void setup() {
 }
 
 void loop() {
-  if(Serial.available() > 0){
-    inString = Serial.read();
-    String check = inString.substring(0, 8);
+  if(Serial.available())  {
+    inDouble = Serial.read();
     
-    switch(hash(inString)){
-      case hash("Voltage") : 
-        updateVoltage(inString); 
+    while(!(inDouble = 10)){
+      if(inDouble > 64)
+        check = inDouble;
+      if(48 <= inDouble <= 57){
+        inDouble = inDouble - 48;
+        if(decimal)
+          data = inDouble * pow(10, digit * (-1)) + data;
+        else{
+          if(digit == 0)
+            data = inDouble + data;
+          else
+            data = inDouble * 10 + data;
+        }
+      }
+      if(inDouble == 46)
+        decimal = true;
+    }
+    
+    decimal = false;
+    
+    Serial.print("Received: ");
+    Serial.println(data);
+    
+    switch(check)  {
+      case 86 : 
+        updateVoltage(data); 
         break;
-      case hash("Current") : 
-        updateCurrent(inString); 
+      case 67 : 
+        updateCurrent(data); 
         break;
-      case hash("On/Off:") : 
-        updateOn(inString); 
+      case 79 : 
+        updateOn(data); 
         break;
       default : 
-        Serial.print("Invalid Serial Input");
+        Serial.println("Invalid Serial Input");
     }
   }
-
-  Serial.print("Voltage: ");
-  Serial.println(voltage);
-  
-  Serial.print("Current: ");
-  Serial.println(current);
-  
-  Serial.print("On/Off: ");
-  Serial.println(on);
 
   delay(1000);
 }
 
-void updateVoltage(String in){
-  String in = in.substring(9);
-  voltage = std::stod(in); 
+void updateVoltage(double data) {
+  voltage = data;
   analogWrite(CV_V, map(voltage, 0, 18, 0, 255));
-}
-
-void updateCurrent(String in){
-  String in = in.substring(9);
-  current = std::stod(in);
-  analogWrite(CI_V, map(current, 0, 1, 0, 255));
-}
-
-void updateOn(String in){
-  String in = in.substring(8);
   
-  if(in == "ON"){
-    on = true;
-    analogWrite(ON, HIGH);
+  Serial.print("Voltage: ");
+  Serial.println(voltage);
+}
+
+void updateCurrent(double data) {
+  current = data;
+  analogWrite(CI_V, map(current, 0, 1, 0, 255));
+  
+  Serial.print("Current: ");
+  Serial.println(current);
+}
+
+void updateOn(double data)  {
+  if(data == 0)  {
+    on = false;
+    analogWrite(ON, LOW);
   }
-  else{
-    if(in = "OFF"){
-      on = false;
-      analogWrite(ON, LOW);
+  else  {
+    if(data == 1){
+      on = true;
+      analogWrite(ON, HIGH);
     }
-    else{
+    else  {
       Serial.print("Invalid On/Off Input");
     }
   }
+
+  Serial.print("On/Off: ");
+  Serial.println(on);
 }
 
-int hash (String word)   
-{       int sum = 0;
-        for (int k = 0; k < word.length(); k++)
-            sum = sum + int(word[k]);
-        return  sum % SIZE; 
+void establishContact() {
+  while(Serial.available() <= 0)  {
+    Serial.println("A");
+    delay(300);
+  }
 }

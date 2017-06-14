@@ -8,7 +8,7 @@ import java.awt.event.*;
 
 public class Controller extends JFrame	{
 	public static void main (String[] args)	{
-		JFrame frame = new JFrame();
+		JFrame frame = new JFrame("PMC35-1A Controller");
 		frame.setSize(400, 225);
 		frame.setLocation(100, 50);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -18,6 +18,10 @@ public class Controller extends JFrame	{
 }
 
 public class ArduinoComm extends PApplet{
+	public ArduinoComm()	{
+		setup();
+	}
+	
 	public void setup()	{
 		size(200, 200);
 		String portName = Serial.list()[1];
@@ -32,23 +36,26 @@ public class ArduinoComm extends PApplet{
 		myPort.write("Current: " + newCurrent);
 	}
 
-	public void updateResistance(int newResistance)	{
-		myPort.write("Resistance: " + newResistance);
+	public void updateOn(boolean on)	{
+		myPort.write("On/Off: " + on);
 	}
 }
 
 public class InputWindow extends JPanel{
 	ArduinoComm comm;
-	JLabel voLabel, currLabel, resLabel;
-	JTextField voText, currText, resText;
-	JButton voButton, currButton, resButton;   
+	JLabel voLabel, currLabel, onLabel;
+	JTextField voText, currText, onText;
+	JButton voButton, currButton, onButton;   
 
 	public InputWindow(){
 		setLayout(new GridLayout(3, 3)); 
+
+		comm = new ArduinoComm();
+		comm.init();
 		
 		voLabel = new JPanel("Voltage: ");
 		add(voLabel);
-		voText = new JTextField();
+		voText = new JTextField("Enter Value Between 0-35");
 		add(voText);
 		voButton = new JButton("Update");
 		voButton.addActionListener(new VoltageListener());		
@@ -56,19 +63,19 @@ public class InputWindow extends JPanel{
 
 		currLabel = new JPanel("Current: ");
 		add(currLabel);
-		currText = new JTextField();
+		currText = new JTextField("Enter Value Between 0-1");
 		add(currText);
 		currButton = new JButton("Update");
 		currButton.addActionListener(new CurrentListener());
 		add(currButton);
 
-		resLabel = new JPanel("Resistance: ");
-		add(resLabel);
-		resText = new JTextField();
-		add(resText);
-		resButton = new JButton("Update");
-		resButton.addActionListner(new ResistanceListener());
-		add(resButton);
+		onLabel = new JPanel("On/Off: ");
+		add(onLabel);
+		onText = new JTextField("Either \"ON\" or \"OFF\"");
+		add(onText);
+		onButton = new JButton("Update");
+		onButton.addActionListener(new onListener());
+		add(onButton);
 	}
 
 	class VoltageListener implements ActionListener{
@@ -97,15 +104,17 @@ public class InputWindow extends JPanel{
 		}
 	}
 
-	class ResistanceListener implements ActionListener{
+	class OnListener implements ActionListener{
 		public void actionPerformed(ActionEvent ae)	{
-			try	{
-				String resistance = resText.getText();
-				comm.updateResistance(Integer.parseInt(resistance));
-				resText.setText("");
+			String inString = onText.getText();
+			if(inString == "ON")	{
+				comm.updateOn(true);
 			}
-			catch(Exception e)	{
-				JOptionPane.showMessageDialog(frame, "Invalid Resistance", "Number Format Error", JOptionPane.WARNING_MESSAGE);
+			else	{
+				if(inString == "OFF")
+					comm.updateOn(false);
+				else
+					JOptionPane.showMessageDialog(frame, "Invalid State", "Input Either ON or OFF", JOptionPane.WARNING_MESSAGE);
 			}
 		}
 	}
