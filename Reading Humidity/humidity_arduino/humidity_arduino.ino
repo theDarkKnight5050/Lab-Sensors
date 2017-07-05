@@ -5,15 +5,11 @@
  * @mentor Jill Burnham
  * @date 6-6-2016
  */
- 
-//voltage through humdity sensor
-#define INPUTVOLTAGE 3.3
 //proportionality constant from humidity to voltage
-#define RHtoVCONSTANT 48
+#define RHtoVCONSTANT 46
 //humdity pin
 #define HUMIDITYPIN A1
-#define MINOUTPUTVOLTAGE 0.5
-#define MAXOUTPUTVOLTAGE 3.3
+#define MAXOUTPUTVOLTAGE 5.0
 //number of values to average over 1 second
 int NUMAVERAGE = 5;
 
@@ -27,16 +23,16 @@ void loop() {
   float reading;
 
   for(int i = 0; i < NUMAVERAGE; i++){
-    reading = analogRead(HUMIDITYPIN);
-    reading = reading/1023 * MAXOUTPUTVOLTAGE;
-
-    delay(500);
+    reading += analogRead(HUMIDITYPIN);
+    delay(1000);
   }
-     
+  reading = reading/NUMAVERAGE;
+  reading = reading * MAXOUTPUTVOLTAGE/1023;
+  
   Serial.print("Analog Reading: ");
   Serial.println(reading);
     
-  reading = reading * RHtoVCONSTANT - 24; 
+  reading = reading * RHtoVCONSTANT - 23; 
     
   Serial.print("Humidity: ");
   Serial.print(reading);
